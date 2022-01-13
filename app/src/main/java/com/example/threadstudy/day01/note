@@ -1,0 +1,28 @@
+线程的组成：开辟线程的功能(Thread.start) + 执行单元(Runnable)。
+
+常见的线程创建方式：
+<1>. new Thread(new Runnable){}
+new 一个thread,将执行单元Runnable 当做参数传递到构造方法中去， Thread.start会在进程中开辟线程，然后执行传递过来的执行单元。
+
+<2>. 实现Runnable接口，创建出一个执行单元。 然后传给 Thread 或者 线城池。
+
+Thread 和 Runnable的区别：
+Thread：是一个 Runnable的实现类。 它的run方法中：target.run();  而target是构造方法传进来的 runnable执行单元。
+        Thread功能强大， 不仅包含了执行单元，还有开辟线程的能力。
+Runnable: 是一个接口。
+
+implement Runnable 和 extends Thread 哪种方式更好：
+implement Runnable 方法更好：
+1. 执行单元 和 开辟线程 解耦
+2. 因为java只能单继承 多实现，所以 implement更好 约束性小。
+3. extends Thread 每次都会开辟新的线程，消耗大，使用Runnable + 线程池 能够降低线程的频繁创建和销毁。
+
+Thread被start多次会怎么样？
+会抛出异常， 因为只有未启动的线程 才允许被启动。
+Thread.start（）的流程：  检查线程状态 -> 加入线程组 -> 调用start0() 启动线程。
+
+
+
+
+
+

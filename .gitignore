@@ -10,3 +10,6 @@
 local.properties
 /gradle/
 /settings.gradle
+/gradle.properties
+/gradlew
+/gradlew.bat
