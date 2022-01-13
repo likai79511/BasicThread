@@ -1,0 +1,34 @@
+线程停止方式：
+<1>正常停止： run方法执行完毕，自动停止
+<2>业务需求，主动停止。
+
+最好的主动停止线程方式:
+使用interrupt 通知要被中断的线程，最终在该线程内部决定是否需要停止。
+
+特点：发起interrupt通知的 和 要被停止的线程 不是同一个， 整个过程是协作式的。  比如 A线程要停止B线程， A发送Interrupt->B,
+B中可以 根据 Thread.interrupted 去判断 是否收到这个通知，然后决定是否去停止。
+相当于 一个发送端，一个接收端。
+
+线程停止场景：用户取消了操作、服务需要快速关闭、运行超时等。
+
+线程不能够立即停止，因为涉及共享数据一致性、资源释放等，来确保程序能够稳定运行。
+
+Interrupt中断线程操作处理：
+1. 如果interrupt发出时 刚好在业务代码中，我们可以自行通过 Thread.interrupted 去判断 来决定是否终止。
+2. 如果interrupt发出时 刚好处在 Thread.sleep/wait 阻塞状态时， 会抛出InterruptException。
+
+Thread.sleep 如果发现了 interrupted状态且抛出异常后，会将该线程的interrupted状态清除掉。针对try-catch 捕获了InterruptedException后
+将 中断状态 清除的问题，有以下几种解决方法：
+1.中断传递： 不使用try-catch来自己处理 InterruptException，而是在方法签名中 抛出该异常，以便上层能够处理，防止自己吞掉，即将 中断 向上传递。
+2.中断恢复： 在catch中调用 Thread.currentThread().interrupt() 去再次设置中断状态，以便上层的Thread.interrupted 可以获取到。
+
+如果需要在中断后做收尾的操作，那就使用中断恢复（收尾之后，重新设置中断状态），以便每一层级调用都能够独立处理中断收尾工作。
+
+stop并非不能停止线程，而是太过暴力，不安全，会导致原本原子化的操作从中间截断。
+suspend和resume被弃用的原因是： 挂起时不释放锁，很容易造成死锁问题。
+
+不能用变量去控制中断，比如volatile去作为中断的状态，因为变量无法在阻塞状态下唤醒，也就是说 变量无法响应 interrupt异常.
+
+判断是否被中断的方法：
+1. static boolean interrupted().   静态方法，作用于调用线程，返回调用线程的中断状态，而非子线程，且会清除中断状态。
+2. boolean isInterrupted(). 成员方法，作用于对象，返回该线程的中断状态，且不会清除状态。
