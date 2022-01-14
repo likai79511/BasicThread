@@ -1,0 +1,13 @@
+线程的六种状态：
+New、Runnable、Blocked、Waiting、Timed_Waiting、Terminated.
+
+New: 当Thread被创建，还没有调用start的时候。
+Runnable: 调用了start之后。
+Blocked: 当执行到 synchronized修饰的代码块 却没有获取到锁的时候。
+Waiting：当执行了 wait(),join() 等不带时间的阻塞时。 无法自己唤醒。
+Timed_Waiting： 当执行了 wait(time),sleep(time),join(time) 带时间的阻塞时。 超时后会释放锁，可自己唤醒。
+Terminated: 终止状态。 结束 或者 意外停止。
+
+
+
+
