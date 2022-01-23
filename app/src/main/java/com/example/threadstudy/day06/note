@@ -1,0 +1,69 @@
+volatile
+
+volatile是一种同步机制，比synchronized或者Lock相关类更轻量，因为使用volatile并不会发生 上下文切换 等开销很大的行为。
+因为不会发生线程切换，只是将本地内存的值刷到主内存中去。
+开销小，但是相应的能力也小，虽然volatile是用来同步的保证线程安全的，但是volatile做不到synchronized那样的原子保护，volatile仅在有限的场景下才能发挥作用。
+
+不适用：a++
+适用场合1：boolean flag,如果一个共享变量自始至终只被各个线程赋值，而没有其他的操作，那么就可以用volatile来代替synchronized或
+          代替原子变量，因为赋值自身是有原子性的，而volatile又保证了可见性，所以就足以保证线程安全。
+          比如： flag = true; 就可以， 但是 flag = !flag, 就不适合。
+
+适用场合2：作为刷新之前变量的触发器。
+          利用volatile满足 happens-before的原则，可以将volatile修饰的变量语句作为触发器/分界线，当该变量语句执行完后，其前面的语句均具备可见性。
+          比如：
+
+          volatile boolean initialized = false;
+          //Thread-A
+          todo...
+          initialized = true;
+
+          //Thread-B
+          while(initialized){
+          todo...
+          }
+          该例子中 initialized 作为触发器，当它被赋值之后，它前面的线程A执行的数据都具备可见性，这就是happens-before原则。
+
+volatile作用：
+1.可见性：读一个volatile变量之前，需要先使相应的本地缓存失效，这样就必须到主内存读取最新值，写一个volatile属性就会立即刷入到主内存。
+（即读的时候 让本地内存失效，从主存读， 写的时候 写入主内存）
+
+2.禁止指令重排序优化：解决单例双重锁乱序问题。
+
+volatile 可以使得long 和 double的赋值是原子的。
+
+Java中的原子操作有哪些？
+1. 除了long和double之外的基本类型(int, byte, boolean, short, char, float)的赋值操作
+2. 所有引用的赋值操作
+3. java.concurrent.Atomic.*包中所有类的原子操作
+
+long和double的原子性
+对于这两种数据类型的单个写入被拆分成两步：每个32位半写一个。这可能导致线程从一次写入到64位值的前32位，而从另一次写入看到第二次32位的情况。
+在32位上的JVM，long和double的操作不是原子的，但是在64位的JVM上则是原子的。
+volatile long 和 double value的写入和读取 始终是原子的。
+
+--单例模式
+为什么需要单例： 节省内存和计算、保证结果正确、方便管理。
+适用场景：
+1. 无状态的工具类：比如日志工具类，不管在哪里使用，我们要的只是它帮我们记录日志信息，不需要在它的实例上存储任何状态。
+2. 全局信息类
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
