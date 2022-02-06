@@ -1,0 +1,62 @@
+死锁
+
+发生在并发中，处理不得当就会引发死锁。
+互不相让： 多个线程相互持有对方资源且相互等待对方释放，导致所有线程都处于等待状态。
+场景：相互持有、形成环路。
+
+危害：影响用户体验、系统崩溃、性能降低。
+
+死锁排查：
+
+本地调试法(线下)： jstack。
+1>先找到进程的pid， 可以通过 {JAVA_HOME}/jps 获取pid。
+2. 执行jstack pid 获取死锁信息。jstack <pid>
+
+Found one Java-level deadlock:
+=============================
+"Thread-0":
+  waiting to lock monitor 0x000001b64d912a80 (object 0x000000071fb223a0, a java.lang.Object),
+  which is held by "Thread-1"
+"Thread-1":
+  waiting to lock monitor 0x000001b64d912880 (object 0x000000071fb22390, a java.lang.Object),
+  which is held by "Thread-0"
+
+Java stack information for the threads listed above:
+===================================================
+"Thread-0":
+        at com.example.threadstudy.day07.DeadLockTest$Run.run(DeadLockTest.java:85)
+        - waiting to lock <0x000000071fb223a0> (a java.lang.Object)
+        - locked <0x000000071fb22390> (a java.lang.Object)
+        at java.lang.Thread.run(java.base@11.0.11/Thread.java:829)
+"Thread-1":
+        at com.example.threadstudy.day07.DeadLockTest$Run.run(DeadLockTest.java:97)
+        - waiting to lock <0x000000071fb22390> (a java.lang.Object)
+        - locked <0x000000071fb223a0> (a java.lang.Object)
+        at java.lang.Thread.run(java.base@11.0.11/Thread.java:829)
+
+Found 1 deadlock.
+
+线上发生死锁：
+1.保存死锁发生的堆栈信息
+2.重启服务器
+3.结合日志，快速修复
+
+修复策略：
+互持资源的: 改变锁持有的顺序。
+环路死锁：改变某个锁持有的顺序，使其无法生成环路。
+
+如何避免死锁：
+1.设置超时时间： Lock.tryLock(timeout),因为synchronized不具备 尝试获取锁的能力。
+2.多使用并发类，而不是自己设计锁。
+3.尽量降低锁的使用粒度：用不同的锁而不是一个锁。
+
+怎么检测出死锁： 每次持有锁的时候，记录下来，检查环路图。
+
+
+活锁：线程没有阻塞，也始终在运行，但是程序得不到进展，因为线程重复做同样的事。
+案例： A和B线程 同时礼让，同时等待。
+原因： 重试机制不变，消息队列始终重试。
+解决方案：
+以太网的指数退避算法。 加入随机因素，减少碰撞次数。
+
+
